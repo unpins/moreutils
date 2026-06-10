@@ -29,6 +29,15 @@ let
   picFlag = lib.optionalString static.stdenv.hostPlatform.isLinux "-fno-pic";
   noPieFlag = lib.optionalString static.stdenv.hostPlatform.isLinux "-no-pie";
 
+  # The partial link must use the UNWRAPPED ld: the wrapper appends
+  # NIX_LDFLAGS to every invocation, and nix-lib's dns-fallback puts
+  # `--wrap=getaddrinfo … -l:libunpindns.a -lc` there — so a wrapped `ld -r`
+  # folds PIC libc.a members into each tool object, whose COMDAT pc-thunks
+  # the objcopy step then localizes (fatal on i686, silent libc text
+  # duplication everywhere else). An `-r` combine of the tool's own objects
+  # needs no search paths, so the raw ld loses nothing.
+  rawLd = "${static.stdenv.cc.bintools.bintools}/bin/${static.stdenv.cc.targetPrefix}ld";
+
   # All nine C tools. ifdata is Linux/Unix network-interface only; it builds and
   # runs here, but is dropped from the cosmo/Windows multicall (see cosmo.nix).
   applets = [ "isutf8" "ifdata" "ifne" "pee" "sponge" "mispipe" "lckdo" "parallel" "errno" ];
@@ -68,7 +77,7 @@ let
           $CC -O2 ${picFlag} -I. -Iis_utf8 -c "$s" -o "$o"
           toolobjs="$toolobjs $o"
         done
-        $LD -r $toolobjs -o "objs/$t.o"
+        ${rawLd} -r $toolobjs -o "objs/$t.o"
         $OBJCOPY --redefine-sym "''${pfx}main=$pfx''${t}_main" "objs/$t.o"
         $OBJCOPY --keep-global-symbol="$pfx''${t}_main" "objs/$t.o"
         OBJS="$OBJS objs/$t.o"
