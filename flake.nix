@@ -14,11 +14,12 @@
   # (vidir vipe ts combine zrun chronic) are Perl scripts with non-core module
   # deps (IPC::Run, Date::Parse), out of scope for a self-contained binary.
   #
-  # Linux + macOS only. ./multicall.nix builds the 9 C tools static and
-  # post-links them. No Windows build: most tools assume fork/waitpid/pipe,
-  # which mingw lacks; Cosmopolitan polyfills fork on Windows but its
-  # fork/spawn/waitpid emulation is unreliable for `parallel`'s job model
-  # (jobs run but output is lost), so shipping it would silently misbehave.
+  # Linux + macOS native via ./multicall.nix (9 tools, static, post-linked);
+  # Windows via Cosmopolitan (./cosmo.nix, 8 tools — ifdata is Unix
+  # network-interface only). mingw has no fork/waitpid/pipes, but cosmo's NT
+  # process layer runs the whole moreutils job model — validated on a real
+  # Windows VM, including a 200-job `parallel -j 8` stress with no output
+  # lost. (wine is not a proxy here: it can't run APE at all.)
   outputs = { self, unpins-lib }:
     unpins-lib.lib.mkStandaloneFlake {
       inherit self;
@@ -27,6 +28,7 @@
       # exit-0 smoke. defaultApplet routes the bare/renamed invocation there.
       smoke = [ "-h" ];
       smokePattern = "Usage: errno";
+      windowsBuild = import ./cosmo.nix { inherit unpins-lib; };
       build = pkgs:
         import ./multicall.nix {
           lib = pkgs.lib // unpins-lib.lib;
