@@ -106,6 +106,15 @@ ${lib.multicallDispatcherC { name = "moreutils"; defaultApplet = "errno"; }}
       runHook preInstall
       mkdir -p $out/bin
       install -m755 moreutils $out/bin/moreutils
+
+      # Embed each shipped tool's man page (see ./multicall.nix). Reuse the
+      # build-host nixpkgs roff — arch-independent text, valid for the cosmo
+      # build too; the windows build harvests its own share/man.
+      mkdir -p $out/share/man/man1
+      for n in ${lib.concatStringsSep " " applets}; do
+        gzip -dc ${pkgs.moreutils}/share/man/man1/$n.1.gz > $out/share/man/man1/$n.1
+      done
+
       runHook postInstall
     '';
 

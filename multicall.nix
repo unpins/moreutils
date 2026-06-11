@@ -99,6 +99,17 @@ ${lib.multicallDispatcherC { name = "moreutils"; defaultApplet = "errno"; }}
       for n in ${lib.concatStringsSep " " applets}; do
         ln -s moreutils $out/bin/$n
       done
+
+      # Embed each shipped tool's man page. The source carries only .docbook
+      # (no built .1), so reuse the already-generated, arch-independent roff
+      # from nixpkgs' same-version moreutils — one page per applet.
+      # mkStandaloneFlake's withMan harvests $out/share/man and folds them into
+      # the binary's embedded ZIP.
+      mkdir -p $out/share/man/man1
+      for n in ${lib.concatStringsSep " " applets}; do
+        gzip -dc ${pkgs.moreutils}/share/man/man1/$n.1.gz > $out/share/man/man1/$n.1
+      done
+
       runHook postInstall
     '';
 
