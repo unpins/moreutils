@@ -105,9 +105,16 @@ ${lib.multicallDispatcherC { name = "moreutils"; defaultApplet = "errno"; }}
       # from nixpkgs' same-version moreutils — one page per applet.
       # mkStandaloneFlake's withMan harvests $out/share/man and folds them into
       # the binary's embedded ZIP.
+      #
+      # Harvest from buildPackages (the native build host), NOT the target
+      # pkgs: the roff is arch-independent, and nixpkgs' moreutils is a
+      # perl package — referencing the *target* one drags the whole perl
+      # toolchain into the build, which fails to cross-build for some targets
+      # (perl Configure patch rejected on x86_64-darwin; File-ShareDir test
+      # broken on i686-musl). The build host's copy is always native + cached.
       mkdir -p $out/share/man/man1
       for n in ${lib.concatStringsSep " " applets}; do
-        gzip -dc ${pkgs.moreutils}/share/man/man1/$n.1.gz > $out/share/man/man1/$n.1
+        gzip -dc ${pkgs.buildPackages.moreutils}/share/man/man1/$n.1.gz > $out/share/man/man1/$n.1
       done
 
       runHook postInstall
