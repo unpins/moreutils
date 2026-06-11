@@ -26,23 +26,7 @@ To install the programs onto your PATH:
 unpin install moreutils
 ```
 
-`unpin install moreutils` creates the commands `errno`, `ifdata`, `ifne`, `isutf8`, `lckdo`, `mispipe`, `parallel`, `pee`, and `sponge` (on Windows, all of them except `ifdata`). The full list is always in `unpin info moreutils`.
-
-## Programs
-
-| command | what it does |
-| --- | --- |
-| `sponge` | soak up all of stdin, then write it to a file (lets a pipeline read and write the same file) |
-| `parallel` | run a command for each argument, several at a time |
-| `pee` | feed stdin to several commands at once (like `tee` into pipes) |
-| `ifne` | run a command only if stdin is not empty |
-| `mispipe` | pipe two commands, returning the exit status of the first |
-| `lckdo` | run a command while holding a lock on a file |
-| `isutf8` | check whether files (or stdin) are valid UTF-8 |
-| `ifdata` | print information about a network interface (Linux/macOS only — it reads Unix network APIs with no Windows translation) |
-| `errno` | look up errno names, numbers, and messages |
-
-The Perl programs from moreutils (`vidir`, `vipe`, `ts`, `combine`, `zrun`, `chronic`) are not included — they depend on non-core Perl modules, so they don't fit a self-contained single binary.
+This creates `sponge`, `parallel`, `pee`, `ifne`, and the rest — `unpin info moreutils` lists them all (on Windows, every one except `ifdata`).
 
 ## Build locally
 
@@ -66,6 +50,6 @@ The [Releases](https://github.com/unpins/moreutils/releases) page has standalone
 ## Build notes
 
 - The programs are folded into one `moreutils` binary that picks the right tool from how it's invoked; `unpin install` recreates the individual commands. (Several tools each define their own `usage` and globals, so every tool's symbols except its entry point are made file-local before linking.)
-- The Windows build comes from [Cosmopolitan](https://github.com/jart/cosmopolitan) (mingw has no `fork`/`waitpid`/pipes, which most of these tools are built on). Cosmopolitan's NT process layer runs the whole moreutils job model — validated on real Windows, including a 200-job `parallel -j 8` stress with no output lost. It ships 8 of the 9 programs: `ifdata` is the exception above.
-- No upstream features are disabled on the platforms that are shipped.
+- The Windows build comes from [Cosmopolitan](https://github.com/jart/cosmopolitan) (mingw has no `fork`/`waitpid`/pipes, which most of these tools are built on). Cosmopolitan's NT process layer runs the whole moreutils job model — validated on real Windows, including a 200-job `parallel -j 8` stress with no output lost. It ships 8 of the 9 programs; `ifdata` (network-interface info via Unix-only APIs) has no Windows translation.
+- The Perl programs (`vidir`, `vipe`, `ts`, `combine`, `zrun`, `chronic`) are excluded — they need non-core Perl modules that don't fit a self-contained single binary. Every C program ships, with no upstream features disabled.
 
