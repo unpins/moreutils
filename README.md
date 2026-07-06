@@ -41,7 +41,7 @@ Or run directly:
 nix run github:unpins/moreutils
 ```
 
-Linux x86_64 ~130 KB stripped. The first invocation will offer to add the [unpins.cachix.org](https://unpins.cachix.org) substituter so most pulls come pre-built.
+Linux x86_64 ~190 KB stripped. The first invocation will offer to add the [unpins.cachix.org](https://unpins.cachix.org) substituter so most pulls come pre-built.
 
 ## Manual download
 

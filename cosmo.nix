@@ -15,9 +15,10 @@
 #   - pee.c uses signal() without including <signal.h> (transitive on glibc,
 #     an implicit-declaration error on cosmocc) → force-include it.
 #
-# The symbol-isolation recipe differs from ./multicall.nix: cosmocc emits fat
-# x86_64+aarch64 objects, so the native `ld -r` + objcopy route doesn't
-# apply. Instead each tool is compiled twice — pass 1 to discover its defined
+# The symbol-isolation recipe: cosmocc emits fat x86_64+aarch64 objects, so a
+# native `ld -r` + objcopy route wouldn't apply even if we used one (the
+# Linux/macOS build self-folds via the unpin-llvm engine's bitcode, not
+# objcopy). Instead each tool is compiled twice — pass 1 to discover its defined
 # globals with $NM, pass 2 with a force-included rename header
 # (`#define main <tool>_main` + `#define <sym> <tool>__<sym>`) — the same
 # X+Z preprocessor-rename recipe e2fsprogs' multicall uses for cosmo.
@@ -93,8 +94,12 @@ let
         OBJS="$OBJS $toolobjs"
       done
 
-      printf '%s\n' ${lib.concatStringsSep " " applets} > multicall/apps.list
-${lib.multicallDispatcherC { name = "moreutils"; defaultApplet = "errno"; }}
+      # Dispatcher reads multicall/applets.list as a TSV of <applet>\t<fn-base>
+      # (C symbol <fn-base>_main). The pass-2 rename header maps main → <tool>_main
+      # per tool, so fn-base == tool name.
+      mkdir -p multicall
+      for t in ${lib.concatStringsSep " " applets}; do printf '%s\t%s\n' "$t" "$t"; done > multicall/applets.list
+${lib.multicallTableDispatcherC { name = "moreutils"; defaultApplet = "errno"; }}
       $CC -O2 -c -o multicall/dispatcher.o multicall/dispatcher.c
 
       $CC -o moreutils multicall/dispatcher.o $OBJS
@@ -107,7 +112,7 @@ ${lib.multicallDispatcherC { name = "moreutils"; defaultApplet = "errno"; }}
       mkdir -p $out/bin
       install -m755 moreutils $out/bin/moreutils
 
-      # Embed each shipped tool's man page (see ./multicall.nix). Reuse the
+      # Embed each shipped tool's man page (as the engine build does). Reuse the
       # build-host nixpkgs roff — arch-independent text, valid for the cosmo
       # build too; the windows build harvests its own share/man. buildPackages
       # keeps it on the native host (perl package — never cross-build it).
