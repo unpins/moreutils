@@ -86,8 +86,8 @@
       inherit self;
       name = "moreutils";
       # These tools mostly have no --version; `errno -h` is the portable
-      # exit-0 smoke. defaultProgram routes the bare/renamed invocation there.
-      smoke = [ "-h" ];
+      # exit-0 smoke.
+      smoke = [ "--unpin-program=errno" "-h" ];
       smokePattern = "Usage: errno";
       windowsBuild = import ./cosmo.nix { inherit unpins-lib; };
 
@@ -100,7 +100,6 @@
       engine = "unpin-llvm";
       multicall = {
         programs = map (n: { name = n; }) cTools;
-        defaultProgram = "errno";
       };
 
       build = engineBuild;
