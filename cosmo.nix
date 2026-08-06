@@ -96,10 +96,12 @@ let
 
       # Dispatcher reads multicall/applets.list as a TSV of <applet>\t<fn-base>
       # (C symbol <fn-base>_main). The pass-2 rename header maps main → <tool>_main
-      # per tool, so fn-base == tool name.
+      # per tool, so fn-base == tool name. moreutils is not itself a program, so
+      # a bare or unknown name lists instead of picking one — same as the
+      # native fold.
       mkdir -p multicall
       for t in ${lib.concatStringsSep " " applets}; do printf '%s\t%s\n' "$t" "$t"; done > multicall/applets.list
-${lib.multicallTableDispatcherC { name = "moreutils"; defaultApplet = "errno"; }}
+${lib.multicallTableDispatcherC { name = "moreutils"; }}
       $CC -O2 -c -o multicall/dispatcher.o multicall/dispatcher.c
 
       $CC -o moreutils multicall/dispatcher.o $OBJS
