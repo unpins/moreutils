@@ -33,6 +33,15 @@
       # link sidecar and the standalone self-folds them into one `moreutils`
       # binary.
       cTools = [ "isutf8" "ifdata" "ifne" "pee" "sponge" "mispipe" "lckdo" "parallel" "errno" ];
+      # The windows fold's whole dispatch table, declared once: ./cosmo.nix
+      # renders applets.list and the dispatcher from it, `withAliases` announces
+      # it, and `multicall.windowsTable` hands the same value to CI. Eight, not
+      # nine — `ifdata` needs the Linux ioctls cosmo has no answer for — which
+      # is exactly why the windows half needs a table of its own.
+      winTable = ulib.multicallTable {
+        name = "moreutils";
+        applets = map (n: { name = n; }) (builtins.filter (n: n != "ifdata") cTools);
+      };
       engineBuild = pkgs:
         let
           static = pkgs.pkgsStatic;
@@ -89,7 +98,7 @@
       # exit-0 smoke.
       smoke = [ "--unpin-program=errno" "-h" ];
       smokePattern = "Usage: errno";
-      windowsBuild = import ./cosmo.nix { inherit unpins-lib; };
+      windowsBuild = import ./cosmo.nix { inherit unpins-lib winTable; };
 
       # Build via the unpin-llvm engine + emit a bitcode multicall module. On
       # Linux AND macOS the engine compiles the nine C tools (engineBuild) to
@@ -100,6 +109,7 @@
       engine = "unpin-llvm";
       multicall = {
         programs = map (n: { name = n; }) cTools;
+        windowsTable = winTable;
       };
 
       build = engineBuild;

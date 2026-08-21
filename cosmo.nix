@@ -22,13 +22,13 @@
 # globals with $NM, pass 2 with a force-included rename header
 # (`#define main <tool>_main` + `#define <sym> <tool>__<sym>`) — the same
 # X+Z preprocessor-rename recipe e2fsprogs' multicall uses for cosmo.
-{ unpins-lib }:
+{ unpins-lib, winTable }:
 pkgs:
 let
   cosmoPkgs = unpins-lib.lib.cosmoStaticCross pkgs;
   lib = cosmoPkgs.lib // unpins-lib.lib;
 
-  applets = [ "isutf8" "ifne" "pee" "sponge" "mispipe" "lckdo" "parallel" "errno" ];
+  applets = winTable.announced;
 
   multicall = cosmoPkgs.stdenv.mkDerivation {
     pname = "moreutils";
@@ -94,14 +94,11 @@ let
         OBJS="$OBJS $toolobjs"
       done
 
-      # Dispatcher reads multicall/applets.list as a TSV of <applet>\t<fn-base>
-      # (C symbol <fn-base>_main). The pass-2 rename header maps main → <tool>_main
-      # per tool, so fn-base == tool name. moreutils is not itself a program, so
-      # a bare or unknown name lists instead of picking one — same as the
-      # native fold.
-      mkdir -p multicall
-      for t in ${lib.concatStringsSep " " applets}; do printf '%s\t%s\n' "$t" "$t"; done > multicall/applets.list
-${lib.multicallTableDispatcherC { name = "moreutils"; }}
+      # applets.list + dispatcher.c, both rendered from the ONE table the flake
+      # declares. The pass-2 rename header maps main → <tool>_main per tool, so
+      # each row is self-mapping; moreutils is not itself a program, so the
+      # table's naming rule lists on a bare or unknown name.
+${winTable.emit { }}
       $CC -O2 -c -o multicall/dispatcher.o multicall/dispatcher.c
 
       $CC -o moreutils multicall/dispatcher.o $OBJS
@@ -138,6 +135,6 @@ in
 lib.withAliases cosmoPkgs
   {
     primary = "moreutils.exe";
-    aliases = applets;
+    aliases = winTable.announced;
   }
   multicall
