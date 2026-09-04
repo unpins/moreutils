@@ -14,11 +14,13 @@ Part of the [unpins](https://unpins.org) catalog; install it with [`unpin`](http
 Run a program with [unpin](https://github.com/unpins/unpin):
 
 ```bash
-echo hi | unpin moreutils sponge file.txt          # soak up stdin, then write the file
-unpin moreutils parallel gzip -- *.log             # run a command per argument, in parallel
-git ls-files | unpin moreutils ifne xargs wc -l    # run only if stdin is non-empty
-unpin moreutils errno 13                            # look up an errno code
+echo hi | unpin moreutils --unpin-program=sponge file.txt   # soak up stdin, then write the file
+unpin moreutils --unpin-program=parallel gzip -- *.log      # run a command per argument, in parallel
+git ls-files | unpin moreutils --unpin-program=ifne xargs wc -l  # run only if stdin is non-empty
+unpin moreutils --unpin-program=errno 13                    # look up an errno code
 ```
+
+A bare `unpin moreutils` lists the programs it holds.
 
 To install the programs onto your PATH:
 
@@ -32,13 +34,13 @@ This creates `sponge`, `parallel`, `pee`, `ifne`, and the rest — `unpin info m
 
 ```bash
 nix build
-./result/bin/moreutils errno -l
+./result/bin/moreutils --unpin-program=errno -l
 ```
 
 Or run directly:
 
 ```bash
-nix run github:unpins/moreutils
+nix run github:unpins/moreutils -- --unpin-program=errno 13
 ```
 
 Linux x86_64 ~190 KB stripped. The first invocation will offer to add the [unpins.cachix.org](https://unpins.cachix.org) substituter so most pulls come pre-built.
