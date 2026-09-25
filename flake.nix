@@ -88,7 +88,10 @@
             done
             runHook postInstall
           '';
-          meta.license = pkgs.lib.licenses.gpl2Plus;
+          meta = {
+            inherit (pkgs.moreutils.meta) description;
+            license = pkgs.lib.licenses.gpl2Plus;
+          };
         };
     in
     ulib.mkStandaloneFlake {
