@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.70-3] - 2026-09-26
+
 ### Fixed
 
 - The README ran the programs positionally (`unpin moreutils sponge file.txt`),
