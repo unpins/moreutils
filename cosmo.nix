@@ -124,7 +124,7 @@ ${winTable.emit { }}
     '';
 
     meta = {
-      description = "Standalone build of moreutils (C tools)";
+      inherit (pkgs.moreutils.meta) description;
       license = lib.licenses.gpl2Plus;
     };
   };
