@@ -30,6 +30,10 @@ unpin install moreutils
 
 This creates `sponge`, `parallel`, `pee`, `ifne`, and the rest — `unpin info moreutils` lists them all (on Windows, every one except `ifdata`).
 
+## Man pages
+
+Each program's man page is embedded — read one with `unpin man moreutils <program>`, e.g. `unpin man moreutils sponge`.
+
 ## Build locally
 
 ```bash
