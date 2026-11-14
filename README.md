@@ -57,5 +57,5 @@ The [Releases](https://github.com/unpins/moreutils/releases) page has standalone
 
 - The programs are folded into one `moreutils` binary that picks the right program from how it's invoked; `unpin install` recreates the individual commands. (Several programs each define their own `usage` and globals, so every program's symbols except its entry point are made file-local before linking.)
 - The Windows build comes from [Cosmopolitan](https://github.com/jart/cosmopolitan) (mingw has no `fork`/`waitpid`/pipes, which most of these programs are built on). The whole moreutils job model works there — validated on real Windows, including a 200-job `parallel -j 8` stress with no output lost. It ships 8 of the 9 programs; `ifdata` (network-interface info via Unix-only APIs) has no Windows translation.
-- The Perl programs (`vidir`, `vipe`, `ts`, `combine`, `zrun`, `chronic`) are excluded — they need non-core Perl modules that don't fit a self-contained single binary. Every C program ships, with no upstream features disabled.
+- **Not included:** the Perl programs (`vidir`, `vipe`, `ts`, `combine`, `zrun`, `chronic`) — they need non-core Perl modules that don't fit a self-contained single binary. Every C program ships.
 
